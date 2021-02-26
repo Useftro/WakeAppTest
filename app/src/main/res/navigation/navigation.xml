@@ -9,33 +9,28 @@
         android:id="@+id/gameFragment"
         android:name="com.uniolco.wakeapptest.ui.game.GameFragment"
         android:label="game_fragment"
-        tools:layout="@layout/game_fragment" >
-        <action
-            android:id="@+id/action_gameFragment_to_wonFragment"
-            app:destination="@id/wonFragment" />
-        <action
-            android:id="@+id/action_gameFragment_to_lostFragment"
-            app:destination="@id/lostFragment" />
-    </fragment>
+        tools:layout="@layout/game_fragment" />
     <fragment
         android:id="@+id/lostFragment"
         android:name="com.uniolco.wakeapptest.ui.lost.LostFragment"
         android:label="lost_fragment"
-        tools:layout="@layout/lost_fragment" />
+        tools:layout="@layout/lost_fragment" >
+        <action
+            android:id="@+id/action_lostFragment_to_menuFragment"
+            app:popUpTo="@id/menuFragment" />
+    </fragment>
     <fragment
         android:id="@+id/wonFragment"
         android:name="com.uniolco.wakeapptest.ui.won.WonFragment"
         android:label="won_fragment"
-        tools:layout="@layout/won_fragment" />
+        tools:layout="@layout/won_fragment" >
+        <action
+            android:id="@+id/action_wonFragment_to_menuFragment"
+            app:popUpTo="@id/menuFragment" />
+    </fragment>
     <fragment
         android:id="@+id/menuFragment"
         android:name="com.uniolco.wakeapptest.ui.menu.MenuFragment"
         android:label="menu_fragment"
-        tools:layout="@layout/menu_fragment" >
-        <action
-            android:id="@+id/action_menuFragment_to_gameFragment"
-            app:destination="@id/gameFragment"
-            app:popUpTo="@id/navigation"
-            app:popUpToInclusive="true" />
-    </fragment>
+        tools:layout="@layout/menu_fragment" />
 </navigation>

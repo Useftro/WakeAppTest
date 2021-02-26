@@ -1,11 +1,12 @@
 package com.uniolco.wakeapptest.ui.won
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import com.uniolco.wakeapptest.R
 
 class WonFragment : Fragment() {
@@ -26,7 +27,10 @@ class WonFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(WonViewModel::class.java)
-        // TODO: Use the ViewModel
+        val fm: FragmentManager = requireActivity().supportFragmentManager
+        for (i in 0 until fm.getBackStackEntryCount()) {
+            fm.popBackStack()
+        }
     }
 
 }

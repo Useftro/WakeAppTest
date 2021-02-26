@@ -2,6 +2,7 @@ package com.uniolco.wakeapptest
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 
@@ -20,7 +21,14 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.NavHostFragment) as NavHostFragment
         navController = navHostFragment.navController
-        navController.navigate(R.id.menuFragment)
-    }
 
+        navHostFragment.childFragmentManager.addOnBackStackChangedListener {
+            if (navHostFragment.childFragmentManager.backStackEntryCount == 0) {
+                Log.d("NAVHOSTFRAGMENT", "BACKSTACK EMPTY")
+            } else {
+                Log.d("NAVHOSTFRAGMENT", "BACKSTACK NOT EMPTY")
+            }
+        }
+
+    }
 }

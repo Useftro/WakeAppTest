@@ -10,8 +10,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.uniolco.wakeapptest.OnSwipeTouchListener
 import com.uniolco.wakeapptest.R
 import kotlinx.coroutines.*
@@ -43,10 +47,6 @@ class GameFragment : Fragment() {
 
     private val idOfComet = 255
 
-    private val checkIfMoving: MutableLiveData<Boolean> = MutableLiveData(false)
-
-    private val xSize: Int = 7
-    private val ySize = 10
 
     private fun createComet() {
         cometImageView = ImageView(context)
@@ -57,6 +57,7 @@ class GameFragment : Fragment() {
         cometImageView.alpha = 0.8F
         val index = (0 until numberOfBlocks * numberOfBlocks).random()
         gridLayout.addView(cometImageView, index)
+
     }
 
     private fun optionsForGrid() {
@@ -122,9 +123,9 @@ class GameFragment : Fragment() {
     }
 
     private fun moveComet(direction: Int) { // 1 is up, 2 is right, 3 is bottom, 4 is left
+        finishTimer()
 
         val index = gridLayout.indexOfChild(cometImageView)
-        checkIfMoving.postValue(true)
         when (direction) {
             1 -> {
                 if (index - numberOfBlocks >= 0) { // checking upper border
@@ -147,11 +148,9 @@ class GameFragment : Fragment() {
                 }
             }
         }
-        // Можно объединить все методы, если всем им назначить основным действием +, а передавать
-        // аргументом значения с разными знаками, т.е. к примеру, при down передавать аргументом + numberOfBlocks-1
 
         checkIfWin()
-        checkIfMoving.postValue(false)
+        fixedTimer = createTimer()
     }
 
     private fun checkIfWin() {
@@ -185,11 +184,13 @@ class GameFragment : Fragment() {
     }
 
     private fun lose() {
-        Log.d("RESULT", "LOST")
+        val navOptions = NavOptions.Builder().setPopUpTo(R.id.menuFragment, true).build()
+        findNavController().navigate(R.id.lostFragment, null, navOptions)
     }
 
     private fun win() {
-        Log.d("RESULT", "WON")
+        val navOptions = NavOptions.Builder().setPopUpTo(R.id.gameFragment, true).build()
+        findNavController().navigate(R.id.wonFragment, null, navOptions)
     }
 
     companion object {
@@ -219,12 +220,22 @@ class GameFragment : Fragment() {
         heightOfScreen = displayMetrics.heightPixels
         widthOfBlock = widthOfScreen / numberOfBlocks
 
+
     }
 
+    override fun onPause() {
+        super.onPause()
+        onDestroy()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        onDestroy()
+    }
 
     override fun onDestroy() {
         super.onDestroy()
-        fixedTimer.cancel()
+        finishTimer()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -235,52 +246,56 @@ class GameFragment : Fragment() {
         listenerForLayout()
 
         fixedTimer = createTimer()
-
-
     }
 
     private fun createTimer(): Timer {
+
         val fixedTim = fixedRateTimer("timer", false, 0, 4000) {
-            requireActivity().runOnUiThread {
-                run {
-                    Thread.sleep(1000)
+            if (isAdded) {
+                requireActivity().runOnUiThread {
+                    run {
+                        Thread.sleep(150)
 
-                    // randomly selecting if we are moving along X or Y axis
-                    val xOrY = listOf("translationX", "translationY").random()
-                    var direction: Int
-                    direction = if (xOrY == "translationX") {
-                        listOf(4, 2).random()
-                    } else {
-                        listOf(1, 3).random()
-                    }
 
-                    Log.d("DIRECTION", "xOrY: $xOrY ,direction: $direction")
+                        // randomly selecting if we are moving along X or Y axis
+                        val xOrY = listOf("translationX", "translationY").random()
+                        var direction: Int
+                        direction = if (xOrY == "translationX") {
+                            listOf(4, 2).random()
+                        } else {
+                            listOf(1, 3).random()
+                        }
 
-                    // checking direction in which we are moving
-                    var width = if (direction == 2 || direction == 3) {
-                        widthOfBlock
-                    } else {
-                        -widthOfBlock
-                    }
+                        Log.d("DIRECTION", "xOrY: $xOrY ,direction: $direction")
 
-                    val mLock = ReentrantLock()
-                    synchronized(lock = mLock) {
-                        objAnimatorOnStart = ObjectAnimator.ofFloat(cometImageView, xOrY, width.toFloat()).apply {
-                            duration = 3000
-                            start()
-                            doOnEnd {
-                                moveComet(direction)
-                                // playing animation to 0F to return image to it's location
-                                objAnimatorOnFinish = ObjectAnimator.ofFloat(cometImageView, xOrY, 0F).apply {
-                                    duration = 0
-                                    start()
-                                }
-                            }
+                        // checking direction in which we are moving
+                        var width = if (direction == 2 || direction == 3) {
+                            widthOfBlock
+                        } else {
+                            -widthOfBlock
+                        }
+
+                        val mLock = ReentrantLock()
+                        synchronized(lock = mLock) {
+                            objAnimatorOnStart =
+                                ObjectAnimator.ofFloat(cometImageView, xOrY, width.toFloat())
+                                    .apply {
+                                        duration = 3000
+                                        start()
+                                        doOnEnd {
+                                            moveComet(direction)
+                                            // playing animation to 0F to return image to it's location
+                                            objAnimatorOnFinish =
+                                                ObjectAnimator.ofFloat(cometImageView, xOrY, 0F)
+                                                    .apply {
+                                                        duration = 0
+                                                        start()
+                                                    }
+                                        }
+                                    }
                         }
                     }
                 }
-
-
             }
 
         }
@@ -291,7 +306,7 @@ class GameFragment : Fragment() {
         fixedTimer.cancel()
         objAnimatorOnStart.removeAllListeners()
         objAnimatorOnStart.cancel()
-        if (objAnimatorOnFinish != null) {
+        if (::objAnimatorOnFinish.isInitialized) {
             objAnimatorOnFinish.removeAllListeners()
             objAnimatorOnFinish.end()
             objAnimatorOnFinish.cancel()
@@ -302,27 +317,19 @@ class GameFragment : Fragment() {
         with(constraintLayout) {
             setOnTouchListener(object : OnSwipeTouchListener(requireContext()) {
                 override fun onSwipeLeft() {
-                    finishTimer()
                     moveComet(4)
-                    fixedTimer = createTimer()
                 }
 
                 override fun onSwipeRight() {
-                    finishTimer()
                     moveComet(2)
-                    fixedTimer = createTimer()
                 }
 
                 override fun onSwipeBottom() {
-                    finishTimer()
                     moveComet(3)
-                    fixedTimer = createTimer()
                 }
 
                 override fun onSwipeTop() {
-                    finishTimer()
                     moveComet(1)
-                    fixedTimer = createTimer()
                 }
             })
         }

@@ -31,20 +31,18 @@ class MenuFragment : Fragment() {
         val view = inflater.inflate(R.layout.menu_fragment, container, false)
         val playBtn: ImageButton = view.findViewById(R.id.playButton)
         playBtn.setOnClickListener {
-            val navbuilder: NavOptions.Builder = NavOptions.Builder()
             Log.d("Biba", "BOBA")
-            val navOptions = navbuilder.setPopUpTo(R.id.menuFragment, true).build()
-            Navigation.findNavController(view).navigate(R.id.gameFragment, null)
+            val navOptions = NavOptions.Builder().setPopUpTo(R.id.menuFragment, true).build()
+            findNavController().navigate(R.id.gameFragment, null, navOptions)
+
         }
-
-
         return view
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MenuViewModel::class.java)
-
     }
+
 
 }
