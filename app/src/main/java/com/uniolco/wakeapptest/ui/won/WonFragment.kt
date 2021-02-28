@@ -4,10 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.findNavController
 import com.uniolco.wakeapptest.R
+import com.uniolco.wakeapptest.shareResult
 
 class WonFragment : Fragment() {
 
@@ -21,16 +25,26 @@ class WonFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.won_fragment, container, false)
+        val view = inflater.inflate(R.layout.won_fragment, container, false)
+        val retryButton = view.findViewById<ImageButton>(R.id.retryButtonLost)
+        val shareButton = view.findViewById<ImageButton>(R.id.shareButtonLost)
+        retryButton.setOnClickListener {
+            restart()
+        }
+        shareButton.setOnClickListener {
+            shareResult("won", view)
+        }
+        return view
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(WonViewModel::class.java)
-        val fm: FragmentManager = requireActivity().supportFragmentManager
-        for (i in 0 until fm.getBackStackEntryCount()) {
-            fm.popBackStack()
-        }
+    }
+
+    private fun restart() {
+        val navOptions = NavOptions.Builder().setPopUpTo(R.id.menuFragment, false).build()
+        findNavController().navigate(R.id.menuFragment, null, navOptions)
     }
 
 }

@@ -4,15 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.uniolco.wakeapptest.R
+import com.uniolco.wakeapptest.shareResult
 
 class LostFragment : Fragment() {
 
@@ -27,9 +26,13 @@ class LostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.lost_fragment, container, false)
-        val button = view.findViewById<Button>(R.id.button)
-        button.setOnClickListener {
+        val retryButton = view.findViewById<ImageButton>(R.id.retryButtonLost)
+        val shareButton = view.findViewById<ImageButton>(R.id.shareButtonLost)
+        retryButton.setOnClickListener {
             restart()
+        }
+        shareButton.setOnClickListener {
+            shareResult("lost", view)
         }
         return view
     }
@@ -49,8 +52,6 @@ class LostFragment : Fragment() {
     }
 
     private fun restart() {
-//        findNavController().navigate(R.id.menuFragment)
-
         val navOptions = NavOptions.Builder().setPopUpTo(R.id.menuFragment, false).build()
         findNavController().navigate(R.id.menuFragment, null, navOptions)
     }
