@@ -72,19 +72,23 @@ class GameFragment : Fragment() {
         optionsForGrid()
 
         for (i in 0 until numberOfBlocks.toDouble().pow(2.0).toInt()) {
-            val imageView = ImageView(context)
-            imageView.id = i
-            imageView.layoutParams = ViewGroup.LayoutParams(widthOfBlock, widthOfBlock)
-            imageView.maxHeight = widthOfBlock
-            imageView.maxWidth = widthOfBlock
-            imageView.setImageResource(tile)
-            imageView.alpha = 0.1F
-            gridLayout.addView(imageView)
+            createTile(i)
         }
 
         createComet()
         generatePlayingTiles()
 
+    }
+
+    private fun createTile(i: Int) {
+        val imageView = ImageView(context)
+        imageView.id = i
+        imageView.layoutParams = ViewGroup.LayoutParams(widthOfBlock, widthOfBlock)
+        imageView.maxHeight = widthOfBlock
+        imageView.maxWidth = widthOfBlock
+        imageView.setImageResource(tile)
+        imageView.alpha = 0.1F
+        gridLayout.addView(imageView)
     }
 
     private fun generatePlayingTiles() {
@@ -219,8 +223,6 @@ class GameFragment : Fragment() {
         widthOfScreen = displayMetrics.widthPixels
         heightOfScreen = displayMetrics.heightPixels
         widthOfBlock = widthOfScreen / numberOfBlocks
-
-
     }
 
     override fun onPause() {
@@ -241,21 +243,17 @@ class GameFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
-
         createGrid()
         listenerForLayout()
-
         fixedTimer = createTimer()
     }
 
     private fun createTimer(): Timer {
-
         val fixedTim = fixedRateTimer("timer", false, 0, 4000) {
             if (isAdded) {
                 requireActivity().runOnUiThread {
                     run {
                         Thread.sleep(150)
-
 
                         // randomly selecting if we are moving along X or Y axis
                         val xOrY = listOf("translationX", "translationY").random()
